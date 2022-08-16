@@ -1,84 +1,57 @@
+#include <stdint.h>
 #include "sort.h"
-#include <stdio.h>
+#define getParent(i) (((i) - 1) / 2)
+#define getLeft(i) (2 * (i) + 1)
+#define getRight(i) (2 * (i) + 2)
 /**
- * swap_nums - swaps numbers
- *
- * @arr: input array
- * @a: first index
- * @b: second index
- * Return: no return
+ * sift_down - sift_down
+ * @array: array containing heap
+ * @size: total size of array
+ * @index: index of index node of heap
+ * @nth: index of nth node in heap to examine
  */
-void swap_nums(int *arr, int a, int b)
+void sift_down(int *array, size_t size, size_t index, size_t nth)
 {
-	arr[a] = arr[a] + arr[b];
-	arr[b] = arr[a] - arr[b];
-	arr[a] = arr[a] - arr[b];
+size_t largest, left, right;
+do {
+left = getLeft(index);
+right = getRight(index);
+largest = index;
+if (right <= nth && array[right] > array[index])
+largest = right;
+if (array[left] > array[largest])
+largest = left;
+if (index == largest)
+return;
+array[index] ^= array[largest];
+array[largest] ^= array[index];
+array[index] ^= array[largest];
+print_array(array, size);
+index = largest;
+} while (getLeft(index) <= nth);
 }
-
 /**
- * recursion_heap - recursion that builds the max heap tree
- *
- * @arr: input array
- * @i: index number
- * @size: size of the array
- * @limit: limit of the array
- * Return: no return
- */
-void recursion_heap(int *arr, int i, size_t size, int limit)
-{
-	int bigger;
-	int i2;
-
-	i2 = i * 2;
-
-	if (i2 + 2 < limit)
-	{
-		recursion_heap(arr, i2 + 1, size, limit);
-		recursion_heap(arr, i2 + 2, size, limit);
-	}
-
-	if (i2 + 1 >= limit)
-		return;
-
-	if (i2 + 2 < limit)
-		bigger = (arr[i2 + 1] > arr[i2 + 2]) ? (i2 + 1) : (i2 + 2);
-	else
-		bigger = i2 + 1;
-
-	if (arr[i] < arr[bigger])
-	{
-		swap_nums(arr, i, bigger);
-		print_array(arr, size);
-		recursion_heap(arr, bigger, size, limit);
-	}
-}
-
-/**
- * heap_sort - sorts an array of integers in ascending
- * order using the Heap sort algorithm
- *
- * @array: input array
- * @size: size of the array
+ * heap_sort - use heap sort
+ * @array: array to sort
+ * @size: size of array
  */
 void heap_sort(int *array, size_t size)
 {
-	int i;
-	size_t limit;
-
-	if (!array || size == 0)
-		return;
-
-	i = 0;
-	limit = size;
-
-	while (limit > 1)
-	{
-		recursion_heap(array, i, size, limit);
-		if (array[i] >= array[limit - 1])
-		{
-			swap_nums(array, i, limit - 1);
-			print_array(array, size);
-		}
-		limit--;
-	}
+size_t node, sorted;
+if (array == NULL || size < 2)
+return;
+for (node = getParent(size - 1); node != SIZE_MAX; node--)
+sift_down(array, size, node, size - 1);
+for (sorted = size - 1; sorted > 1; sorted--)
+{
+array[0] ^= array[sorted];
+array[sorted] ^= array[0];
+array[0] ^= array[sorted];
+print_array(array, size);
+sift_down(array, size, 0, sorted - 1);
+}
+array[0] ^= array[1];
+array[1] ^= array[0];
+array[0] ^= array[1];
+print_array(array, size);
 }
